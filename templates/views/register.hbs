@@ -1,0 +1,26 @@
+    {{>header}}
+    {{>navbar}}
+
+    <h1>employee registrotion form</h1>
+    <form action="/register" method="POST">
+     <div class="f">
+         <div class="p1">
+         <input type="text" placeholder="First Name" name="firstname" value="" autocomplete="off">
+         <input type="email" placeholder="email" name="email" value="" autocomplete="off">
+         <input type="text" placeholder="phone number" name="phone" value="" autocomplete="off">
+         <input type="password" placeholder="password" name="password" value="" autocomplete="off">
+         </div>
+         <div class="p2">
+             <input type="text" placeholder="Last Name" name="lastname" value="" autocomplete="off">
+             <div><input type="radio" name="gender" value="male"><span>Male</span>
+             <input type="radio" name="gender" value="female"><span>Female</span></div>
+             <input type="text" placeholder="Enter your age" name="age" value="" autocomplete="off">
+             <input type="password" placeholder="confirm password" name="confirmpassword" value="" autocomplete="off">
+            
+         </div>
+     </div>
+       <div class="f">
+           <button>login</button>
+           <input type="submit" value="Register">
+       </div>
+</form>

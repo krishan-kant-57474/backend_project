@@ -1,0 +1,31 @@
+ul {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+a {
+  text-decoration: none;
+  color: black;
+}
+
+h1 {
+  color: red;
+}
+
+.f {
+  display: flex;
+}
+.p1,
+.p2 {
+  display: flex;
+  flex-direction: column;
+}
+
+.n {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  width: 10rem;
+  /* align-items: center; */
+}
