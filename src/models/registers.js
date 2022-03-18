@@ -47,13 +47,11 @@ const employeeSchmema = new mongoose.Schema({
   ],
 });
 
-//generating token..............................................
+//generating token..............................................//
 employeeSchmema.methods.generateAuthToken = async function () {
   try {
     // console.log(this.id);
-    const token = jwt.sign(
-      { _id: this._id.toString() },
-      process.env.SECRET_KEY
+    const token = jwt.sign({ _id: this._id.toString() },process.env.SECRET_KEY
     );
     this.tokens = this.tokens.concat({ token: token });
     await this.save();
@@ -64,13 +62,14 @@ employeeSchmema.methods.generateAuthToken = async function () {
     console.log("the error part" + error);
   }
 };
-//convert pasword to hesh......................................
+
+
+//convert password to heshpassword........................................//
 employeeSchmema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
     this.confirmpassword = await bcrypt.hash(this.password, 10);
   }
-
   next();
 });
 

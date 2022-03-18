@@ -2,26 +2,33 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const bcrypt = require("bcryptjs");
-
+const cookieParser = require("cookie-parser");
 require("./db/conn");
 const Register = require("./models/registers");
+const auth = require("./middleware/auth");
+
+
 const app = express();
 const hbs = require("hbs");
 const port = process.env.PORT || 3000;
+
 
 const static_path = path.join(__dirname, "../public"); //in this line i am doing silly misktake... i am not using "/" before public
 const tamplate_path = path.join(__dirname, "../templates/views");
 const partials_path = path.join(__dirname, "../templates/partials");
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false })); //doute => use in place app.use(express.json()) for get in form anything //
 app.use(express.static(static_path));
+
+
 app.set("view engine", "hbs");
 app.set("views", tamplate_path);
 hbs.registerPartials(partials_path);
 
-console.log(process.env.SECRET_KEY);
+// console.log(process.env.SECRET_KEY);
 
 app.get("/", (req, res) => {
   res.render("index");
@@ -33,6 +40,31 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
+});
+
+app.get("/secret", auth, (req, res) => {
+  // console.log(`this is a cookies = ${req.cookies.jwt}`);
+  res.render("secret");
+});
+
+app.get("/logout", auth, async (req, res) => {//doute clear => get want res.send()//
+  try {
+    // console.log(req.user);
+
+    //for single logout,.........................................................//
+    // req.user.tokens = req.user.tokens.filter((currElement) => {
+    //   return currElement.token != req.token;
+    // });
+
+    // logout from all devices...................................................//
+    req.user.tokens = [];
+    res.clearCookie("jwt");
+    // console.log("logout");
+    await req.user.save();
+    res.render("login");
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 app.post("/register", async (req, res) => {
@@ -50,15 +82,19 @@ app.post("/register", async (req, res) => {
         password: password,
         confirmpassword: cpassword,
       });
-
       // console.log(registerEmployee);
 
-      //middleware........................
+      //middleware..................before save we convert password and also generate token.............................//
       const token = await registerEmployee.generateAuthToken();
-      console.log("the token part_1 " + token);
+      // console.log("the token part_1 " + token);
+      
+      res.cookie("jwt", token, {
+        expires: new Date(Date.now() + 600000),
+        httpOnly: true,
+      });
+      console.log(cookie);     //doubte
 
       const register = await registerEmployee.save();
-
       res.status(201).render("index");
     } else {
       res.send("password are not matching");
@@ -68,7 +104,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// login check
+// login check.....................................//
 app.post("/login", async (req, res) => {
   try {
     const email = req.body.email;
@@ -79,7 +115,13 @@ app.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, useremail.password);
 
     const token = await useremail.generateAuthToken();
-    console.log("the token part_2 " + token);
+    // console.log("the token part_2 " + token);
+
+    res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 600000),
+      httpOnly: true,
+    });
+
     // console.log(isMatch);
     if (isMatch) {
       res.status(201).render("index");
@@ -90,19 +132,6 @@ app.post("/login", async (req, res) => {
     res.status(400).send("invalid login details");
   }
 });
-
-// const jwt = require("jsonwebtoken");
-
-// const createToken = async () => {
-//      const token=await jwt.sign({_id:"62316ca76ec1f91a34cc2807"}, "mynameiskrishankantsharmayoutuberanditsnott",{expiresIn:"2 seconds"});
-//      console.log(token);
-
-//      const userVer= await jwt.verify(token,"mynameiskrishankantsharmayoutuberanditsnott")
-//      console.log(userVer);
-
-// };
-
-// createToken();
 
 app.listen(port, () => {
   console.log(`surver is running at port no. ${port}`);
